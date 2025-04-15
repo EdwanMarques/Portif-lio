@@ -32,7 +32,7 @@ export default function Navbar({ sections }: NavbarProps) {
             onClick={() => scrollToSection(sections.hero)}
             className="text-2xl font-bold font-poppins text-primary cursor-pointer"
           >
-            <span className="text-white">&lt;</span>Dev<span className="text-white">/&gt;</span>
+            <span className="text-white">&lt;</span>Edwan Marques<span className="text-white">/&gt;</span>
           </a>
 
           {/* Desktop Navigation */}

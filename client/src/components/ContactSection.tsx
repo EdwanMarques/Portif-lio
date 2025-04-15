@@ -77,7 +77,7 @@ export default function ContactSection() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          <Card className="bg-secondary border-0 rounded-lg shadow-xl">
+          <Card className="bg-secondary border-0 rounded-lg shadow-xl relative z-10">
             <CardContent className="p-8">
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

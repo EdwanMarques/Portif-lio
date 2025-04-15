@@ -23,20 +23,25 @@ export default function ParticlesBackground() {
   return (
     <Particles
       id="particles-js"
-      className="absolute inset-0 z-0"
+      className="absolute inset-0 -z-5"
       init={particlesInit}
       loaded={particlesLoaded}
       options={{
+        background: {
+          color: {
+            value: "transparent",
+          },
+        },
         particles: {
           number: {
-            value: 40,
+            value: 100,
             density: {
               enable: true,
               value_area: 800
             }
           },
           color: {
-            value: "#10b981"
+            value: "#ffffff"
           },
           shape: {
             type: "circle",
@@ -49,7 +54,7 @@ export default function ParticlesBackground() {
             value: 0.3,
             random: true,
             anim: {
-              enable: false,
+              enable: true,
               speed: 1,
               opacity_min: 0.1,
               sync: false
@@ -59,8 +64,8 @@ export default function ParticlesBackground() {
             value: 3,
             random: true,
             anim: {
-              enable: false,
-              speed: 40,
+              enable: true,
+              speed: 2,
               size_min: 0.1,
               sync: false
             }
@@ -68,7 +73,7 @@ export default function ParticlesBackground() {
           line_linked: {
             enable: true,
             distance: 150,
-            color: "#10b981",
+            color: "#ffffff",
             opacity: 0.2,
             width: 1
           },
@@ -81,7 +86,7 @@ export default function ParticlesBackground() {
             out_mode: "out",
             bounce: false,
             attract: {
-              enable: false,
+              enable: true,
               rotateX: 600,
               rotateY: 1200
             }
@@ -95,7 +100,7 @@ export default function ParticlesBackground() {
               mode: "grab"
             },
             onclick: {
-              enable: false,
+              enable: true,
               mode: "push"
             },
             resize: true
@@ -106,6 +111,9 @@ export default function ParticlesBackground() {
               line_linked: {
                 opacity: 0.5
               }
+            },
+            push: {
+              particles_nb: 4
             }
           }
         },

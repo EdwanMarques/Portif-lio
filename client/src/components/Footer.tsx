@@ -13,7 +13,7 @@ export default function Footer() {
           
           <div className="text-center md:text-right">
             <p className="text-gray-400 text-sm">
-              &copy; {currentYear} Desenvolvedor Fullstack. Todos os direitos reservados.
+              &copy; {currentYear} Edwan Marques. Todos os direitos reservados.
             </p>
           </div>
         </div>

@@ -1,28 +1,46 @@
+/**
+ * @author EDWAN MARQUES
+ * @description Servidor principal da aplicação
+ */
+
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
+import cors from "cors";
 
 const app = express();
+
+// Configuração do CORS
+app.use(cors({
+  origin: process.env.NODE_ENV === "production" 
+    ? process.env.FRONTEND_URL || "https://seu-dominio.com" 
+    : "http://localhost:5173", // URL do frontend em desenvolvimento
+  credentials: true, // Permite o envio de cookies
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Configurar sessão com PostgreSQL
+// Configuração da sessão com PostgreSQL
 const PgSession = connectPgSimple(session);
 app.use(session({
   store: new PgSession({
     conString: process.env.DATABASE_URL,
-    tableName: 'session', // Tabela onde as sessões serão armazenadas
-    createTableIfMissing: true, // Cria a tabela se ela não existir
+    tableName: 'session', // Tabela para armazenamento das sessões
+    createTableIfMissing: true, // Cria a tabela automaticamente se não existir
   }),
   secret: process.env.SESSION_SECRET || 'portfolio-admin-secret',
-  resave: false,
-  saveUninitialized: false,
+  resave: true,
+  saveUninitialized: true,
   cookie: {
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 dias
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: false, // Desabilitado em ambiente de desenvolvimento
+    sameSite: 'lax'
   }
 }));
 
@@ -40,7 +58,7 @@ app.use((req, res, next) => {
   res.on("finish", () => {
     const duration = Date.now() - start;
     if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
+      let logLine = `${req.method} ${path} ${res.statusCode} em ${duration}ms`;
       if (capturedJsonResponse) {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
@@ -70,20 +88,18 @@ app.use((req, res, next) => {
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
+  if (process.env.NODE_ENV === "development") {
     await setupVite(app, server);
   } else {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 5000
+  // ALWAYS serve the app on port 3000
   // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = 5000;
+  const port = 3000;
   server.listen({
     port,
-    host: "0.0.0.0",
-    reusePort: true,
+    host: "0.0.0.0"
   }, () => {
     log(`serving on port ${port}`);
   });

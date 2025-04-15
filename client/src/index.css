@@ -84,18 +84,24 @@
 @layer components {
   .typing-container {
     display: inline-block;
+    min-width: 150px;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  @media (min-width: 640px) {
+    .typing-container {
+      min-width: 200px;
+    }
   }
 
   .typing-text {
     overflow: hidden;
     white-space: nowrap;
     border-right: 3px solid;
-    animation: typing 3.5s steps(30, end), blink .75s step-end infinite;
-  }
-
-  @keyframes typing {
-    from { width: 0 }
-    to { width: 100% }
+    animation: blink .75s step-end infinite;
+    display: inline-block;
+    max-width: 100%;
   }
 
   @keyframes blink {

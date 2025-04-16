@@ -3,7 +3,12 @@ services:
   - type: web
     name: portifolio-backend
     env: node
-    buildCommand: npm install && npm run build:render
+    nodeVersion: 18.17.0
+    buildCommand: |
+      rm -rf node_modules
+      npm cache clean --force
+      npm install
+      npm run build:render
     startCommand: npm run start:prod
     envVars:
       - key: NODE_ENV
@@ -43,7 +48,12 @@ services:
   - type: web
     name: portifolio-frontend
     env: static
-    buildCommand: cd client && npm install && npm run build
+    buildCommand: |
+      cd client
+      rm -rf node_modules
+      npm cache clean --force
+      npm install
+      npm run build
     staticPublishPath: client/dist
     envVars:
       - key: VITE_API_URL

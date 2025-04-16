@@ -100,11 +100,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Salvar ID do usuário na sessão
       req.session.userId = user.id;
       
-      // Configurar cookie de sessão com opções seguras
-      req.session.cookie.secure = process.env.NODE_ENV === 'production';
-      req.session.cookie.httpOnly = true;
-      req.session.cookie.sameSite = 'strict';
-      
       res.status(200).json({ message: "Login realizado com sucesso" });
     } catch (error) {
       console.error('Erro no login:', error);

@@ -12,27 +12,12 @@ export default function HeroSection() {
   };
 
   const roles = [
-    "Fullstack",
-    "Frontend",
-    "Backend",
-    "DevOps",
-    "Analista de Dados",
-    "UI/UX Designer",
-    "Especialista em IA",
-    "Engenheiro de Cibersegurança",
-    "Arquiteto Cloud",
-    "Cientista de Dados",
-    "Engenheiro de Robótica",
-    "Especialista em IoT",
-    "Especialista em Bioinformática",
-    "Especialista em Computação Quântica",
-    "Especialista em VR/AR",
-    "Especialista em Computação Espacial",
-    "Especialista em Computação Sustentável",
-    "Especialista em Computação Vestível",
-    "Especialista em Aprimoramento Neurológico",
-    "Especialista em IA Agêntica"
+    "Fullstack", "Frontend", "Backend", "DevOps", "UI/UX",
+    "Cloud", "Dados", "IA", "IA Agêntica", "Cibersegurança",
+    "IoT", "Robótica", "Bioinformática", "Quântica", "VR/AR",
+    "Espacial", "Vestível", "Neurotech", "Sustentável"
   ];
+  
   
 
   return (
@@ -48,7 +33,7 @@ export default function HeroSection() {
           
           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold font-poppins mb-4 sm:mb-6 animate-fade-in-down leading-tight">
             <span className="text-white">
-              Atuo como
+              Atuo com 
               <span className="block"> </span>
             </span>
             <span className="text-primary">

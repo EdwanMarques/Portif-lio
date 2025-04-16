@@ -12,8 +12,12 @@ import cors from "cors";
 import compression from "compression";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
 // Configuração para confiar no proxy do Render
 app.set('trust proxy', 1);
@@ -49,12 +53,10 @@ app.use(limiter);
 
 // Configuração do CORS
 app.use(cors({
-  origin: process.env.NODE_ENV === "production" 
-    ? process.env.FRONTEND_URL || "https://seu-dominio.com" 
-    : "http://localhost:5173", // URL do frontend em desenvolvimento
-  credentials: true, // Permite o envio de cookies
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Habilitar compressão
@@ -70,18 +72,19 @@ const PgSession = connectPgSimple(session);
 app.use(session({
   store: new PgSession({
     conString: process.env.DATABASE_URL,
-    tableName: 'session', // Tabela para armazenamento das sessões
-    createTableIfMissing: true, // Cria a tabela automaticamente se não existir
+    tableName: 'session',
+    createTableIfMissing: true,
   }),
-  secret: process.env.SESSION_SECRET || 'portfolio-admin-secret',
-  resave: true,
-  saveUninitialized: true,
+  secret: process.env.SESSION_SECRET || 'um-segredo-muito-seguro-e-longo-para-producao',
+  resave: false,
+  saveUninitialized: false,
   cookie: {
-    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 dias
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production", // Habilitado em ambiente de produção
-    sameSite: 'lax',
-    domain: process.env.NODE_ENV === "production" ? ".onrender.com" : undefined // Permitir cookies entre subdomínios no Render
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    maxAge: 24 * 60 * 60 * 1000, // 24 horas
+    domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : undefined,
+    path: '/'
   }
 }));
 
@@ -135,12 +138,7 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // Usar a porta definida no ambiente ou 3000 como padrão
-  const port = process.env.PORT ? parseInt(process.env.PORT) : 3000;
-  server.listen({
-    port,
-    host: "0.0.0.0"
-  }, () => {
-    log(`Servidor rodando em modo ${process.env.NODE_ENV} na porta ${port}`);
+  server.listen(PORT, () => {
+    log(`Servidor rodando em modo ${process.env.NODE_ENV} na porta ${PORT}`);
   });
 })();

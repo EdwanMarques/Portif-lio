@@ -25,7 +25,7 @@ services:
       - key: ENABLE_COMPRESSION
         value: true
       - key: PORT
-        value: 3000
+        value: 10000
 
   # Serviço do Frontend
   - type: web

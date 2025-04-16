@@ -576,6 +576,7 @@ import compression from "compression";
 import helmet from "helmet";
 import rateLimit2 from "express-rate-limit";
 var app = express2();
+app.set("trust proxy", 1);
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -632,7 +633,9 @@ app.use(session({
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     // Habilitado em ambiente de produção
-    sameSite: "lax"
+    sameSite: "lax",
+    domain: process.env.NODE_ENV === "production" ? ".onrender.com" : void 0
+    // Permitir cookies entre subdomínios no Render
   }
 }));
 app.use((req, res, next) => {

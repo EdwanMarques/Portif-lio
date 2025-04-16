@@ -15,6 +15,9 @@ import rateLimit from "express-rate-limit";
 
 const app = express();
 
+// Configuração para confiar no proxy do Render
+app.set('trust proxy', 1);
+
 // Configuração de segurança básica
 app.use(helmet({
   contentSecurityPolicy: {
@@ -77,7 +80,8 @@ app.use(session({
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 dias
     httpOnly: true,
     secure: process.env.NODE_ENV === "production", // Habilitado em ambiente de produção
-    sameSite: 'lax'
+    sameSite: 'lax',
+    domain: process.env.NODE_ENV === "production" ? ".onrender.com" : undefined // Permitir cookies entre subdomínios no Render
   }
 }));
 

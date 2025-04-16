@@ -18,6 +18,14 @@ services:
         value: https://portifolio-frontend.onrender.com
       - key: VITE_API_URL
         value: https://portifolio-backend.onrender.com
+      - key: RATE_LIMIT_WINDOW_MS
+        value: 900000
+      - key: RATE_LIMIT_MAX_REQUESTS
+        value: 100
+      - key: ENABLE_COMPRESSION
+        value: true
+      - key: PORT
+        value: 3000
 
   # Serviço do Frontend
   - type: web

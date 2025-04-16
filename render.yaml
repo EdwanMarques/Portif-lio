@@ -26,6 +26,18 @@ services:
         value: true
       - key: PORT
         value: 10000
+      - key: CORS_ORIGIN
+        value: https://portifolio-frontend.onrender.com
+      - key: NODE_OPTIONS
+        value: "--max-old-space-size=4096"
+      - key: UV_THREADPOOL_SIZE
+        value: 64
+      - key: CACHE_TTL
+        value: 3600
+      - key: RENDER_EXTERNAL_URL
+        value: https://portifolio-backend.onrender.com
+      - key: RENDER_EXTERNAL_HOSTNAME
+        value: portifolio-backend.onrender.com
 
   # Serviço do Frontend
   - type: web

@@ -5,16 +5,16 @@
   "license": "MIT",
   "scripts": {
     "dev": "tsx server/index.ts",
-    "build": "rm -rf node_modules && npm install && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
+    "build": "rm -rf node_modules && npm install --no-package-lock && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
     "start": "NODE_ENV=production node dist/index.js",
     "check": "tsc",
-    "db:push": "drizzle-kit push",
+    "db:push": "node -e \"console.log('Skipping db:push in production')\"",
     "build:prod": "NODE_ENV=production esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist --minify",
     "start:prod": "NODE_ENV=production node dist/index.js",
-    "build:frontend": "cd client && rm -rf node_modules && npm install && npm run build",
-    "build:render": "rm -rf node_modules && npm install && npm run build:frontend && npm run build:prod",
+    "build:frontend": "cd client && rm -rf node_modules && npm install --no-package-lock && npm run build",
+    "build:render": "rm -rf node_modules && npm install --no-package-lock && npm run build:frontend && npm run build:prod",
     "preview": "vite preview",
-    "postinstall": "npm install",
+    "postinstall": "npm install --no-package-lock",
     "clean": "rm -rf node_modules dist",
     "clean:all": "rm -rf node_modules dist client/node_modules client/dist"
   },
@@ -114,7 +114,6 @@
     "@types/ws": "^8.5.13",
     "@vitejs/plugin-react": "^4.3.2",
     "autoprefixer": "^10.4.20",
-    "drizzle-kit": "^0.31.0",
     "esbuild": "^0.20.1",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.14",
@@ -127,6 +126,6 @@
     "bufferutil": "^4.0.8"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": "18.17.0"
   }
 }

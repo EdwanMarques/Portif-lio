@@ -204,6 +204,9 @@ var authMiddleware = async (req, res, next) => {
 };
 async function registerRoutes(app2) {
   app2.use(securityHeaders);
+  app2.get("/api/health", (req, res) => {
+    res.status(200).json({ status: "ok", timestamp: (/* @__PURE__ */ new Date()).toISOString() });
+  });
   app2.post("/api/auth/setup", async (req, res) => {
     try {
       const users2 = await storage.getUsers();
@@ -472,7 +475,29 @@ var vite_config_default = defineConfig({
   root: path.resolve(import.meta.dirname, "client"),
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
-    emptyOutDir: true
+    emptyOutDir: true,
+    minify: "terser",
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true
+      }
+    },
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ["react", "react-dom", "react-router-dom"],
+          ui: ["@radix-ui/react-accordion", "@radix-ui/react-dialog", "@radix-ui/react-dropdown-menu"],
+          utils: ["date-fns", "zod", "zustand"]
+        }
+      }
+    },
+    sourcemap: false,
+    chunkSizeWarningLimit: 1e3
+  },
+  server: {
+    port: process.env.PORT ? parseInt(process.env.PORT) : 3e3,
+    host: true
   }
 });
 
@@ -547,7 +572,35 @@ function serveStatic(app2) {
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import cors from "cors";
+import compression from "compression";
+import helmet from "helmet";
+import rateLimit2 from "express-rate-limit";
 var app = express2();
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'", process.env.VITE_API_URL || "https://portif-lio-production.up.railway.app"],
+      fontSrc: ["'self'", "https:", "data:"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'none'"]
+    }
+  },
+  crossOriginEmbedderPolicy: false
+}));
+var limiter = rateLimit2({
+  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || "900000"),
+  // 15 minutos
+  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || "100"),
+  // limite de 100 requisições por IP
+  standardHeaders: true,
+  legacyHeaders: false
+});
+app.use(limiter);
 app.use(cors({
   origin: process.env.NODE_ENV === "production" ? process.env.FRONTEND_URL || "https://seu-dominio.com" : "http://localhost:5173",
   // URL do frontend em desenvolvimento
@@ -556,6 +609,9 @@ app.use(cors({
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
+if (process.env.ENABLE_COMPRESSION === "true") {
+  app.use(compression());
+}
 app.use(express2.json());
 app.use(express2.urlencoded({ extended: false }));
 var PgSession = connectPgSimple(session);
@@ -574,8 +630,8 @@ app.use(session({
     maxAge: 30 * 24 * 60 * 60 * 1e3,
     // 30 dias
     httpOnly: true,
-    secure: false,
-    // Desabilitado em ambiente de desenvolvimento
+    secure: process.env.NODE_ENV === "production",
+    // Habilitado em ambiente de produção
     sameSite: "lax"
   }
 }));
@@ -616,11 +672,11 @@ app.use((req, res, next) => {
   } else {
     serveStatic(app);
   }
-  const port = 3e3;
+  const port = process.env.PORT ? parseInt(process.env.PORT) : 3e3;
   server.listen({
     port,
     host: "0.0.0.0"
   }, () => {
-    log(`serving on port ${port}`);
+    log(`Servidor rodando em modo ${process.env.NODE_ENV} na porta ${port}`);
   });
 })();

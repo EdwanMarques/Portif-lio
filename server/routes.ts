@@ -39,6 +39,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Aplicar headers de segurança em todas as rotas
   app.use(securityHeaders);
 
+  // Endpoint de health check para o Railway
+  app.get("/api/health", (req, res) => {
+    res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+  });
+
   // Rota para criar um usuário administrador (uso único para configuração)
   app.post("/api/auth/setup", async (req: Request, res: Response) => {
     try {

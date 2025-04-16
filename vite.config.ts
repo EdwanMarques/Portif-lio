@@ -29,5 +29,27 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+      },
+    },
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          ui: ['@radix-ui/react-accordion', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
+          utils: ['date-fns', 'zod', 'zustand'],
+        },
+      },
+    },
+    sourcemap: false,
+    chunkSizeWarningLimit: 1000,
+  },
+  server: {
+    port: process.env.PORT ? parseInt(process.env.PORT) : 3000,
+    host: true,
   },
 });

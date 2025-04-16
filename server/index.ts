@@ -9,8 +9,40 @@ import { setupVite, serveStatic, log } from "./vite";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import cors from "cors";
+import compression from "compression";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 
 const app = express();
+
+// Configuração de segurança básica
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'", process.env.VITE_API_URL || "https://portif-lio-production.up.railway.app"],
+      fontSrc: ["'self'", "https:", "data:"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'none'"],
+    },
+  },
+  crossOriginEmbedderPolicy: false,
+}));
+
+// Configuração do rate limiting
+const limiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || "900000"), // 15 minutos
+  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || "100"), // limite de 100 requisições por IP
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Aplicar rate limiting em todas as rotas
+app.use(limiter);
 
 // Configuração do CORS
 app.use(cors({
@@ -21,6 +53,11 @@ app.use(cors({
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
 }));
+
+// Habilitar compressão
+if (process.env.ENABLE_COMPRESSION === "true") {
+  app.use(compression());
+}
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -39,7 +76,7 @@ app.use(session({
   cookie: {
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 dias
     httpOnly: true,
-    secure: false, // Desabilitado em ambiente de desenvolvimento
+    secure: process.env.NODE_ENV === "production", // Habilitado em ambiente de produção
     sameSite: 'lax'
   }
 }));
@@ -94,13 +131,12 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 3000
-  // this serves both the API and the client.
-  const port = 3000;
+  // Usar a porta definida no ambiente ou 3000 como padrão
+  const port = process.env.PORT ? parseInt(process.env.PORT) : 3000;
   server.listen({
     port,
     host: "0.0.0.0"
   }, () => {
-    log(`serving on port ${port}`);
+    log(`Servidor rodando em modo ${process.env.NODE_ENV} na porta ${port}`);
   });
 })();

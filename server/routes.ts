@@ -28,11 +28,43 @@ function isAuthenticated(req: Request, res: Response, next: NextFunction) {
 
 // Middleware de autenticação
 const authMiddleware = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  if (!req.session.userId) {
-    res.status(401).json({ error: "Não autorizado" });
-    return;
+  try {
+    if (!req.session || !req.session.userId) {
+      res.status(401).json({ 
+        message: "Sessão expirada ou inválida. Por favor, faça login novamente.",
+        code: "SESSION_EXPIRED"
+      });
+      return;
+    }
+
+    // Verificar se a sessão ainda é válida no banco de dados
+    const session = await new Promise((resolve, reject) => {
+      req.session.store.get(req.sessionID, (err, session) => {
+        if (err) {
+          console.error('Erro ao verificar sessão:', err);
+          reject(err);
+        } else {
+          resolve(session);
+        }
+      });
+    });
+
+    if (!session) {
+      res.status(401).json({ 
+        message: "Sessão não encontrada. Por favor, faça login novamente.",
+        code: "SESSION_INVALID"
+      });
+      return;
+    }
+
+    next();
+  } catch (error) {
+    console.error('Erro na autenticação:', error);
+    res.status(500).json({ 
+      message: "Ocorreu um erro ao verificar sua autenticação. Por favor, tente novamente.",
+      code: "AUTH_ERROR"
+    });
   }
-  next();
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -80,30 +112,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { username, password } = req.body;
       
-      // Validação básica dos dados de entrada
-      if (!username || !password || typeof username !== 'string' || typeof password !== 'string') {
-        return res.status(400).json({ message: "Dados de entrada inválidos" });
+      if (!username || !password) {
+        return res.status(400).json({ 
+          message: "Por favor, forneça usuário e senha.",
+          code: "MISSING_CREDENTIALS"
+        });
       }
+
+      const user = await validateUser(username, password);
       
-      // Buscar usuário pelo nome de usuário
-      const user = await storage.getUserByUsername(username);
-      
-      // Usar um tempo constante para comparação de senha para prevenir ataques de timing
-      const isMatch = user ? await bcrypt.compare(password, user.password) : false;
-      
-      if (!user || !isMatch) {
-        // Usar um delay aleatório para prevenir ataques de timing
-        await new Promise(resolve => setTimeout(resolve, Math.random() * 100));
-        return res.status(401).json({ message: "Credenciais inválidas" });
+      if (!user) {
+        return res.status(401).json({ 
+          message: "Usuário ou senha incorretos. Por favor, tente novamente.",
+          code: "INVALID_CREDENTIALS"
+        });
       }
-      
-      // Salvar ID do usuário na sessão
-      req.session.userId = user.id;
-      
-      res.status(200).json({ message: "Login realizado com sucesso" });
+
+      // Regenerar sessão para prevenir fixação de sessão
+      req.session.regenerate((err) => {
+        if (err) {
+          console.error('Erro ao regenerar sessão:', err);
+          return res.status(500).json({ 
+            message: "Ocorreu um erro ao iniciar sua sessão. Por favor, tente novamente.",
+            code: "SESSION_REGENERATION_ERROR"
+          });
+        }
+
+        req.session.userId = user.id;
+        req.session.save((err) => {
+          if (err) {
+            console.error('Erro ao salvar sessão:', err);
+            return res.status(500).json({ 
+              message: "Ocorreu um erro ao salvar sua sessão. Por favor, tente novamente.",
+              code: "SESSION_SAVE_ERROR"
+            });
+          }
+
+          res.status(200).json({ 
+            message: "Login realizado com sucesso!",
+            user: {
+              id: user.id,
+              username: user.username
+            }
+          });
+        });
+      });
     } catch (error) {
       console.error('Erro no login:', error);
-      res.status(500).json({ message: "Erro ao fazer login" });
+      res.status(500).json({ 
+        message: "Ocorreu um erro ao processar seu login. Por favor, tente novamente.",
+        code: "LOGIN_ERROR"
+      });
     }
   });
 

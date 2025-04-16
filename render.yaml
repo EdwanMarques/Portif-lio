@@ -3,7 +3,7 @@ services:
   - type: web
     name: portifolio-backend
     env: node
-    buildCommand: npm run build:render
+    buildCommand: npm install && npm run build:render
     startCommand: npm run start:prod
     envVars:
       - key: NODE_ENV
@@ -29,9 +29,9 @@ services:
       - key: CORS_ORIGIN
         value: https://portifolio-frontend.onrender.com
       - key: NODE_OPTIONS
-        value: "--max-old-space-size=4096"
+        value: "--max-old-space-size=2048"
       - key: UV_THREADPOOL_SIZE
-        value: 64
+        value: 32
       - key: CACHE_TTL
         value: 3600
       - key: RENDER_EXTERNAL_URL
@@ -43,7 +43,7 @@ services:
   - type: web
     name: portifolio-frontend
     env: static
-    buildCommand: cd client && npm install --force && npm run build
+    buildCommand: cd client && npm install && npm run build
     staticPublishPath: client/dist
     envVars:
       - key: VITE_API_URL

@@ -11,10 +11,12 @@
     "db:push": "drizzle-kit push",
     "build:prod": "NODE_ENV=production esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist --minify",
     "start:prod": "NODE_ENV=production node dist/index.js",
-    "build:frontend": "cd client && npm install && npm run build",
-    "build:render": "npm run build:frontend && npm run build:prod",
+    "build:frontend": "cd client && npm install --force && npm run build",
+    "build:render": "rm -rf node_modules && npm install --force && npm run build:frontend && npm run build:prod",
     "preview": "vite preview",
-    "postinstall": "npm install"
+    "postinstall": "npm install --force",
+    "clean": "rm -rf node_modules dist",
+    "clean:all": "rm -rf node_modules dist client/node_modules client/dist"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
